@@ -197,6 +197,35 @@ addrdf
 ```
 
 ```r
+#
+#  Scraping a html table
+#  scraping list of packages from CRAN site
+#
+url = "http://cran.us.r-project.org/web/packages/available_packages_by_date.html"
+cranpg = read_html(url)
+cranlist = cranpg %>% html_nodes("table") %>% html_table()
+head(cranlist[[1]])
+```
+
+```
+##         Date          Package
+## 1 2016-01-17              DJL
+## 2 2016-01-17     freqparcoord
+## 3 2016-01-17             nlme
+## 4 2016-01-17             OECD
+## 5 2016-01-17       proportion
+## 6 2016-01-17 RcmdrPlugin.NMBU
+##                                                                Title
+## 1                       Distance Measure Based Judgment and Learning
+## 2                             Novel Methods for Parallel Coordinates
+## 3                          Linear and Nonlinear Mixed Effects Models
+## 4                              Search and Extract Data from the OECD
+## 5 Inference on Single Binomial Proportion and Bayesian\nComputations
+## 6        R Commander Plug-in for University Level Applied Statistics
+```
+
+```r
+# Used RStudio 0.99.489
 sessionInfo()
 ```
 
@@ -215,9 +244,9 @@ sessionInfo()
 ## [1] rmarkdown_0.8.1 rvest_0.3.1     xml2_0.1.2     
 ## 
 ## loaded via a namespace (and not attached):
-##  [1] httr_1.0.0      selectr_0.2-3   R6_2.1.1        magrittr_1.5   
-##  [5] markdown_0.7.7  htmltools_0.2.6 tools_3.2.3     Rcpp_0.12.2    
-##  [9] stringi_1.0-1   knitr_1.11      digest_0.6.8    stringr_1.0.0  
-## [13] evaluate_0.8    XML_3.98-1.3
+##  [1] Rcpp_0.12.2     XML_3.98-1.3    digest_0.6.8    R6_2.1.1       
+##  [5] magrittr_1.5    evaluate_0.8    httr_1.0.0      stringi_1.0-1  
+##  [9] curl_0.9.4      tools_3.2.3     stringr_1.0.0   selectr_0.2-3  
+## [13] markdown_0.7.7  htmltools_0.2.6 knitr_1.11
 ```
 

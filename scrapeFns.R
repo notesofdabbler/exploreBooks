@@ -62,6 +62,7 @@ getbookInfo = function(booklink){
   
     recompg = recomurl %>% read_html()
     recobooks = recompg %>% html_nodes(".product-information p a") %>% html_text()
+    recobooklinks = recompg %>% html_nodes(".product-information p a") %>% html_attr("href")
   
     bookinfo = data.frame(title = title,
                         authors = authors,
@@ -72,9 +73,10 @@ getbookInfo = function(booklink){
                         price2 = price[2],
                         price2curr = currency[2],
                         citations = citations,
-                        downloads = downloads)
+                        downloads = downloads,
+                        link = booklink)
   
-    recobookinfo = data.frame(title = title, recobooks = recobooks, rnk = seq(1,length(recobooks)))
+    recobookinfo = data.frame(title = title, recobooks = recobooks, recobooklinks = recobooklinks, rnk = seq(1,length(recobooks)))
   
     return(list(bookinfo = bookinfo, recobookinfo = recobookinfo))
   

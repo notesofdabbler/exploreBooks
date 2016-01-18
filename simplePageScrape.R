@@ -71,4 +71,14 @@ addrdf = data.frame(name = name, addr = addr, city = city, state = state, zipcod
                     phone = phone, email = email, link = link)
 addrdf
 
+#
+#  Scraping a html table
+#  scraping list of packages from CRAN site
+#
+url = "http://cran.us.r-project.org/web/packages/available_packages_by_date.html"
+cranpg = read_html(url)
+cranlist = cranpg %>% html_nodes("table") %>% html_table()
+head(cranlist[[1]])
+
+# Used RStudio 0.99.489
 sessionInfo()

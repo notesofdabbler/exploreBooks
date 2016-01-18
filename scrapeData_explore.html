@@ -201,197 +201,210 @@ hr {
 </head>
 
 <body>
-<pre><code class="r">#
-#  scraping a simple html page
-#  Page has 4 people with contact information. We want to get them into a dataframe
-#
-
+<pre><code class="r"># load libraries
 library(rvest)
+library(dplyr)
+library(stringr)
+
+# link to Use R! titles at Springer site
+useRlink = &quot;http://www.springer.com/?SGWID=0-102-24-0-0&amp;series=Use+R&amp;sortOrder=relevance&amp;searchType=ADVANCED_CDA&amp;searchScope=editions&amp;queryText=Use+R&quot;
 
 # Read the page
-pg = read_html(&quot;simplePage.html&quot;)
+userPg = useRlink %&gt;% read_html()
 
-# Get list of names
-# attribute id can be extracted with prefixing #
-name = pg %&gt;% html_nodes(&quot;#name&quot;) %&gt;% html_text()
-name
+## Get info of books displayed on the page
+
+# title
+booktitles = userPg %&gt;% html_nodes(&quot;.productGraphic img&quot;) %&gt;% html_attr(&quot;alt&quot;)
+booktitles
 </code></pre>
 
-<pre><code>## [1] &quot;Alexander, Jones&quot; &quot;Liz, Phillips&quot;    &quot;Joe, Whoisit&quot;    
-## [4] &quot;Hello, Howareyou&quot;
+<pre><code>##  [1] &quot;R by Example&quot;               &quot;Biostatistics with R&quot;      
+##  [3] &quot;Numerical Ecology with R&quot;   &quot;Chemometrics with R&quot;       
+##  [5] &quot;Meta-Analysis with R&quot;       &quot;Quality Control with R&quot;    
+##  [7] &quot;Graphical Models with R&quot;    &quot;Bayesian Networks in R&quot;    
+##  [9] &quot;Modern Optimization with R&quot; &quot;Six Sigma with  R&quot;
 </code></pre>
 
-<pre><code class="r"># extracting names with xpath
-names2 = pg %&gt;% html_nodes(xpath = &quot;//li//div[@id = &#39;name&#39;]&quot;) %&gt;% html_text()
-names2
+<pre><code class="r"># link to book details
+booklinklist = userPg %&gt;% html_nodes(&quot;.productGraphic a&quot;) %&gt;% html_attr(&quot;href&quot;)
+booklinklist
 </code></pre>
 
-<pre><code>## [1] &quot;Alexander, Jones&quot; &quot;Liz, Phillips&quot;    &quot;Joe, Whoisit&quot;    
-## [4] &quot;Hello, Howareyou&quot;
+<pre><code>##  [1] &quot;http://www.springer.com/us/book/9781461413646&quot;
+##  [2] &quot;http://www.springer.com/us/book/9781461413011&quot;
+##  [3] &quot;http://www.springer.com/us/book/9781441979759&quot;
+##  [4] &quot;http://www.springer.com/us/book/9783642178405&quot;
+##  [5] &quot;http://www.springer.com/us/book/9783319214153&quot;
+##  [6] &quot;http://www.springer.com/us/book/9783319240442&quot;
+##  [7] &quot;http://www.springer.com/us/book/9781461422983&quot;
+##  [8] &quot;http://www.springer.com/us/book/9781461464457&quot;
+##  [9] &quot;http://www.springer.com/us/book/9783319082622&quot;
+## [10] &quot;http://www.springer.com/us/book/9781461436515&quot;
 </code></pre>
 
-<pre><code class="r"># get links from href attribute
-link = pg %&gt;% html_nodes(&quot;a&quot;) %&gt;% html_attr(&quot;href&quot;)
-link
+<pre><code class="r"># book publication year
+bookyr = userPg %&gt;% html_nodes(xpath = &quot;//span[contains(@class,&#39;renditionDescription&#39;)]&quot;) %&gt;% html_text()
+bookyr
 </code></pre>
 
-<pre><code>## [1] &quot;http:/www.meetup.com&quot; &quot;http:/www.google.com&quot; &quot;http:/www.google.com&quot;
-## [4] &quot;http:/www.google.com&quot;
+<pre><code>##  [1] &quot;2012&quot; &quot;2012&quot; &quot;2011&quot; &quot;2011&quot; &quot;2015&quot; &quot;2015&quot; &quot;2012&quot; &quot;2013&quot; &quot;2014&quot; &quot;2012&quot;
 </code></pre>
 
-<pre><code class="r"># Get list of addresses and cities
-# attribute class can be extracted with prefixing period (.)
-addr = pg %&gt;% html_nodes(&quot;.add&quot;) %&gt;% html_text()
-addr
+<pre><code class="r"># book author
+bookauth = userPg %&gt;% html_nodes(&quot;span[class = &#39;displayBlock&#39;]&quot;) %&gt;% html_text()
+# bookauth = userPg %&gt;% html_nodes(xpath = &quot;//span[@class = &#39;displayBlock&#39;]&quot;) %&gt;% html_text()  ## will give same result
+bookauth
 </code></pre>
 
-<pre><code>## [1] &quot;123, Maple Drive&quot;   &quot;123, Walnut Drive&quot;  &quot;999, Icecream Blvd&quot;
-## [4] &quot;843, Crazy Drive&quot;
+<pre><code>##  [1] &quot;Albert, Jim, Rizzo, Maria&quot;                                    
+##  [2] &quot;Shahbaba, Babak&quot;                                              
+##  [3] &quot;Borcard, Daniel, Gillet, Francois, Legendre, Pierre&quot;          
+##  [4] &quot;Wehrens, Ron&quot;                                                 
+##  [5] &quot;Schwarzer, Guido, Carpenter, James R, Rücker, Gerta&quot;          
+##  [6] &quot;Cano, Emilio L., M. Moguerza, Javier, Prieto Corcoba, Mariano&quot;
+##  [7] &quot;Højsgaard, Søren, Edwards, David, Lauritzen, Steffen&quot;         
+##  [8] &quot;Nagarajan, Radhakrishnan, Scutari, Marco, Lèbre, Sophie&quot;      
+##  [9] &quot;Cortez, Paulo&quot;                                                
+## [10] &quot;Cano, Emilio L., M. Moguerza, Javier, Redchuk, Andrés&quot;
 </code></pre>
 
-<pre><code class="r">city = pg %&gt;% html_nodes(&quot;li .city span&quot;) %&gt;% html_text() 
-city
+<pre><code class="r"># book price
+bookprice = userPg %&gt;% html_nodes(xpath = &quot;//div[@class = &#39;bookListPriceContainer&#39;]//span[2]&quot;) %&gt;% html_text()
+bookprice
 </code></pre>
 
-<pre><code>## [1] &quot;Indianapolis&quot;  &quot;Chicago&quot;       &quot;New York&quot;      &quot;San Francisco&quot;
+<pre><code>##  [1] &quot;$59.99&quot; &quot;$59.99&quot; &quot;$59.99&quot; &quot;$59.99&quot; &quot;$39.99&quot; &quot;$49.99&quot; &quot;$54.99&quot;
+##  [8] &quot;$29.99&quot; &quot;$29.99&quot; &quot;$59.99&quot;
 </code></pre>
 
-<pre><code class="r"># Get state and zip code info
-state = pg %&gt;% html_nodes(&quot;p[geo = &#39;state&#39;]&quot;) %&gt;% html_text()
-state
+<pre><code class="r">pgdf = data.frame(title = booktitles, link = booklinklist, pubyr = bookyr,
+                  auth = bookauth, price = bookprice)
+pgdf
 </code></pre>
 
-<pre><code>## [1] &quot;IN&quot; &quot;IL&quot; &quot;NY&quot; &quot;CA&quot;
+<pre><code>##                         title
+## 1                R by Example
+## 2        Biostatistics with R
+## 3    Numerical Ecology with R
+## 4         Chemometrics with R
+## 5        Meta-Analysis with R
+## 6      Quality Control with R
+## 7     Graphical Models with R
+## 8      Bayesian Networks in R
+## 9  Modern Optimization with R
+## 10          Six Sigma with  R
+##                                             link pubyr
+## 1  http://www.springer.com/us/book/9781461413646  2012
+## 2  http://www.springer.com/us/book/9781461413011  2012
+## 3  http://www.springer.com/us/book/9781441979759  2011
+## 4  http://www.springer.com/us/book/9783642178405  2011
+## 5  http://www.springer.com/us/book/9783319214153  2015
+## 6  http://www.springer.com/us/book/9783319240442  2015
+## 7  http://www.springer.com/us/book/9781461422983  2012
+## 8  http://www.springer.com/us/book/9781461464457  2013
+## 9  http://www.springer.com/us/book/9783319082622  2014
+## 10 http://www.springer.com/us/book/9781461436515  2012
+##                                                             auth  price
+## 1                                      Albert, Jim, Rizzo, Maria $59.99
+## 2                                                Shahbaba, Babak $59.99
+## 3            Borcard, Daniel, Gillet, Francois, Legendre, Pierre $59.99
+## 4                                                   Wehrens, Ron $59.99
+## 5            Schwarzer, Guido, Carpenter, James R, Rücker, Gerta $39.99
+## 6  Cano, Emilio L., M. Moguerza, Javier, Prieto Corcoba, Mariano $49.99
+## 7           Højsgaard, Søren, Edwards, David, Lauritzen, Steffen $54.99
+## 8        Nagarajan, Radhakrishnan, Scutari, Marco, Lèbre, Sophie $29.99
+## 9                                                  Cortez, Paulo $29.99
+## 10         Cano, Emilio L., M. Moguerza, Javier, Redchuk, Andrés $59.99
 </code></pre>
 
-<pre><code class="r">zipcode = pg %&gt;% html_nodes(&quot;p[geocode = &#39;zip&#39;]&quot;) %&gt;% html_text()
-zipcode
+<pre><code class="r">##  Get details for a single book 
+
+booklink = &quot;http://www.springer.com/us/book/9781461478997&quot;
+bookpg = booklink %&gt;% read_html()
+
+# Get title
+booktitle = bookpg %&gt;% html_nodes(&quot;.cms-col dd[itemprop = &#39;name&#39;]&quot;) %&gt;% html_text()
+#bookpg %&gt;% html_nodes(xpath = &quot;//dl[@class = &#39;cms-col&#39;]//dd[@itemprop = &#39;name&#39;]&quot;) %&gt;% html_text()
+booktitle
 </code></pre>
 
-<pre><code>## [1] &quot;12345&quot; &quot;67809&quot; &quot;54321&quot; &quot;11111&quot;
+<pre><code>## [1] &quot;XML and Web Technologies for Data Sciences with R&quot;
 </code></pre>
 
-<pre><code class="r"># What if geo and geocode attributes are not there in html
-state2 = pg %&gt;% html_nodes(&quot;div p&quot;) %&gt;% html_text() # won&#39;t work since it gets both state and zip code
-state2
+<pre><code class="r"># Get authors
+bookauth = bookpg %&gt;% html_nodes(&quot;.cms-col li[itemprop = &#39;author&#39;]&quot;) %&gt;% html_text()
+bookauth
 </code></pre>
 
-<pre><code>## [1] &quot;IN&quot;    &quot;12345&quot; &quot;IL&quot;    &quot;67809&quot; &quot;NY&quot;    &quot;54321&quot; &quot;CA&quot;    &quot;11111&quot;
+<pre><code>## [1] &quot;\n                                    Deborah Nolan\n                                &quot;     
+## [2] &quot;\n                                    Duncan Temple Lang\n                                &quot;
 </code></pre>
 
-<pre><code class="r"># directly using xpath handy since it is able to just extract the first element for state and second element for zip
-state2 = pg %&gt;% html_nodes(xpath = &quot;//div[@class = &#39;city&#39;]/p[1]&quot;) %&gt;% html_text() 
-state2
+<pre><code class="r"># Get price currency and price
+priceCurr = bookpg %&gt;% html_nodes(&quot;meta[itemprop = &#39;priceCurrency&#39;]&quot;) %&gt;% html_attr(&quot;content&quot;)
+priceCurr
 </code></pre>
 
-<pre><code>## [1] &quot;IN&quot; &quot;IL&quot; &quot;NY&quot; &quot;CA&quot;
+<pre><code>## [1] &quot;USD&quot; &quot;USD&quot;
 </code></pre>
 
-<pre><code class="r">zip2 = pg %&gt;% html_nodes(xpath = &quot;//div[@class = &#39;city&#39;]/p[2]&quot;) %&gt;% html_text() 
-zip2
+<pre><code class="r">price = bookpg %&gt;% html_nodes(&quot;meta[itemprop = &#39;price&#39;]&quot;) %&gt;% html_attr(&quot;content&quot;)
+price
 </code></pre>
 
-<pre><code>## [1] &quot;12345&quot; &quot;67809&quot; &quot;54321&quot; &quot;11111&quot;
+<pre><code>## [1] &quot;49.99&quot; &quot;69.99&quot;
 </code></pre>
 
-<pre><code class="r"># Get phone numbers
-phone = pg %&gt;% html_nodes(&quot;.comm p[type = &#39;phone&#39;]&quot;) %&gt;% html_text() 
-phone # problem since only 2 addresses have phone numbers and it will be hard to align with other fields
+<pre><code class="r"># Get citations and downloads
+metricsurl = bookpg %&gt;% html_nodes(&quot;.book-metrics&quot;) %&gt;% html_attr(&quot;data-bookmetrix-ajax-url&quot;)
+metricsurl = paste0(&quot;http://www.springer.com&quot;,metricsurl)
+metricsurl
 </code></pre>
 
-<pre><code>## [1] &quot;317-123-4567&quot; &quot;123-999-4567&quot;
+<pre><code>## [1] &quot;http://www.springer.com/app-pp/bookmetrix?doi=10.1007%2F978-1-4614-7900-0&quot;
 </code></pre>
 
-<pre><code class="r"># workaround is to force using all nodes
-addrnodes = pg %&gt;% html_nodes(&quot;li&quot;)
-addrnodes
+<pre><code class="r">metricspg = metricsurl %&gt;% read_html()
+citations = metricspg %&gt;% html_nodes(&quot;.citations .book-metric-item-value&quot;) %&gt;% html_text() 
+citations
 </code></pre>
 
-<pre><code>## {xml_nodeset (4)}
-## [1] &lt;li&gt;\n           &lt;div id=&quot;name&quot;&gt;&lt;a href=&quot;http:/www.meetup.com&quot;&gt;Alexa ...
-## [2] &lt;li&gt;\n           &lt;div id=&quot;name&quot;&gt;&lt;a href=&quot;http:/www.google.com&quot;&gt;Liz,  ...
-## [3] &lt;li&gt;\n           &lt;div id=&quot;name&quot;&gt;&lt;a href=&quot;http:/www.google.com&quot;&gt;Joe,  ...
-## [4] &lt;li&gt;\n           &lt;div id=&quot;name&quot;&gt;&lt;a href=&quot;http:/www.google.com&quot;&gt;Hello ...
+<pre><code>## [1] &quot;2&quot;
 </code></pre>
 
-<pre><code class="r">phone = sapply(addrnodes, function(x) x %&gt;% html_nodes(&quot;.comm p[type = &#39;phone&#39;]&quot;) %&gt;% html_text())
-phone # has length 0 fields when phone doesn&#39;t exist
+<pre><code class="r">downloads = metricspg %&gt;% html_nodes(&quot;.downloads .book-metric-item-value&quot;) %&gt;% html_text()
+downloads
 </code></pre>
 
-<pre><code>## [[1]]
-## [1] &quot;317-123-4567&quot;
-## 
-## [[2]]
-## character(0)
-## 
-## [[3]]
-## [1] &quot;123-999-4567&quot;
-## 
-## [[4]]
-## character(0)
+<pre><code>## [1] &quot;146204&quot;
 </code></pre>
 
-<pre><code class="r">phone = sapply(phone, function(x) if(length(x) == 0) NA else x) # set NA to missing phone numbers
-phone
+<pre><code class="r"># Get recommended books
+recomurl = bookpg %&gt;% html_nodes(&quot;.product-recommendation&quot;) %&gt;% html_attr(&quot;data-baynote-service-url&quot;)
+recomurl = paste0(&quot;http://www.springer.com&quot;,recomurl)
+recomurl
 </code></pre>
 
-<pre><code>## [1] &quot;317-123-4567&quot; NA             &quot;123-999-4567&quot; NA
+<pre><code>## [1] &quot;http://www.springer.com/app-pp/recommendation/us/978-1-4614-7899-7&quot;
 </code></pre>
 
-<pre><code class="r"># Get email addresses
-email = sapply(addrnodes, function(x) x %&gt;% html_nodes(&quot;.comm p[type = &#39;email&#39;]&quot;) %&gt;% html_text())
-email = sapply(email, function(x) if(length(x) == 0) NA else x) 
-email
+<pre><code class="r">recompg = recomurl %&gt;% read_html()
+recobooks = recompg %&gt;% html_nodes(&quot;.product-information p a&quot;) %&gt;% html_text()
+recobooks
 </code></pre>
 
-<pre><code>## [1] &quot;jabc@gmail.com&quot;  NA                &quot;jwhst@yahoo.com&quot; &quot;hhru@yahoo.com&quot;
+<pre><code>## [1] &quot;R for Marketing Research and Analytics&quot;  
+## [2] &quot;Regression Modeling Strategies&quot;          
+## [3] &quot;ggplot2&quot;                                 
+## [4] &quot;Political Analysis Using R&quot;              
+## [5] &quot;Principal Component Analysis&quot;            
+## [6] &quot;A Beginner&#39;s Guide to R&quot;                 
+## [7] &quot;Monte Carlo Statistical Methods&quot;         
+## [8] &quot;Model Selection and Multimodel Inference&quot;
 </code></pre>
 
-<pre><code class="r"># create a dataframe with address data
-addrdf = data.frame(name = name, addr = addr, city = city, state = state, zipcode = zipcode,
-                    phone = phone, email = email, link = link)
-addrdf
-</code></pre>
-
-<pre><code>##               name               addr          city state zipcode
-## 1 Alexander, Jones   123, Maple Drive  Indianapolis    IN   12345
-## 2    Liz, Phillips  123, Walnut Drive       Chicago    IL   67809
-## 3     Joe, Whoisit 999, Icecream Blvd      New York    NY   54321
-## 4 Hello, Howareyou   843, Crazy Drive San Francisco    CA   11111
-##          phone           email                 link
-## 1 317-123-4567  jabc@gmail.com http:/www.meetup.com
-## 2         &lt;NA&gt;            &lt;NA&gt; http:/www.google.com
-## 3 123-999-4567 jwhst@yahoo.com http:/www.google.com
-## 4         &lt;NA&gt;  hhru@yahoo.com http:/www.google.com
-</code></pre>
-
-<pre><code class="r">#
-#  Scraping a html table
-#  scraping list of packages from CRAN site
-#
-url = &quot;http://cran.us.r-project.org/web/packages/available_packages_by_date.html&quot;
-cranpg = read_html(url)
-cranlist = cranpg %&gt;% html_nodes(&quot;table&quot;) %&gt;% html_table()
-head(cranlist[[1]])
-</code></pre>
-
-<pre><code>##         Date          Package
-## 1 2016-01-17              DJL
-## 2 2016-01-17     freqparcoord
-## 3 2016-01-17             nlme
-## 4 2016-01-17             OECD
-## 5 2016-01-17       proportion
-## 6 2016-01-17 RcmdrPlugin.NMBU
-##                                                                Title
-## 1                       Distance Measure Based Judgment and Learning
-## 2                             Novel Methods for Parallel Coordinates
-## 3                          Linear and Nonlinear Mixed Effects Models
-## 4                              Search and Extract Data from the OECD
-## 5 Inference on Single Binomial Proportion and Bayesian\nComputations
-## 6        R Commander Plug-in for University Level Applied Statistics
-</code></pre>
-
-<pre><code class="r"># Used RStudio 0.99.489
+<pre><code class="r"># Analysis done with RStudio 0.99.489
 sessionInfo()
 </code></pre>
 
@@ -406,13 +419,15 @@ sessionInfo()
 ## [1] stats     graphics  grDevices utils     datasets  methods   base     
 ## 
 ## other attached packages:
-## [1] rmarkdown_0.8.1 rvest_0.3.1     xml2_0.1.2     
+## [1] knitr_1.11      stringr_1.0.0   dplyr_0.4.3     rmarkdown_0.8.1
+## [5] rvest_0.3.1     xml2_0.1.2     
 ## 
 ## loaded via a namespace (and not attached):
-##  [1] Rcpp_0.12.2     XML_3.98-1.3    digest_0.6.8    R6_2.1.1       
-##  [5] magrittr_1.5    evaluate_0.8    httr_1.0.0      stringi_1.0-1  
-##  [9] curl_0.9.4      tools_3.2.3     stringr_1.0.0   selectr_0.2-3  
-## [13] markdown_0.7.7  htmltools_0.2.6 knitr_1.11
+##  [1] Rcpp_0.12.2     XML_3.98-1.3    assertthat_0.1  digest_0.6.8   
+##  [5] R6_2.1.1        DBI_0.3.1       formatR_1.2.1   magrittr_1.5   
+##  [9] evaluate_0.8    httr_1.0.0      stringi_1.0-1   curl_0.9.4     
+## [13] tools_3.2.3     selectr_0.2-3   markdown_0.7.7  parallel_3.2.3 
+## [17] htmltools_0.2.6
 </code></pre>
 
 </body>
